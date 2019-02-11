@@ -123,10 +123,10 @@ resource "aws_eip" "elastic-ip-for-nat-gw" {
 resource "aws_nat_gateway" "nat-gw" {
   allocation_id = "${aws_eip.elastic-ip-for-nat-gw.id}"
   subnet_id     = "${aws_subnet.public-subnet-1.id}"
-  tag {
+  tags {
     Name = "Production-NAT-GW"
   }
-  depends_on    = ["aws_eip.elastic-ip-for-nat-gw"] 
+  depends_on = ["aws_eip.elastic-ip-for-nat-gw"]
 }
 
 resource "aws_route" "nat-gw-route" {
@@ -135,15 +135,15 @@ resource "aws_route" "nat-gw-route" {
   destination_cidr_block  = "0.0.0.0/0"
 }
 
+resource "aws_route" "public-internet-gw-route" {
+  route_table_id          = "${aws_route_table.public-route-table.id}"
+  gateway_id              = "${aws_internet_gateway.production-igw.id}"
+  destination_cidr_block  = "0.0.0.0/0"
+}
+
 resource "aws_internet_gateway" "production-igw" {
   vpc_id = "${aws_vpc.production-vpc.id}"
   tags {
     Name = "Production-IGW"
   }
-}
-
-resource "aws_route" "public-internet-gw-route" {
-  route_table_id          = "${aws_route_table.public-route-table.id}"
-  gateway_id              = "${aws_internet_gateway.production-igw.id}"
-  destination_cidr_block  = "0.0.0.0/0"
 }
