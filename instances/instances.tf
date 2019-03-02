@@ -66,7 +66,7 @@ resource "aws_security_group" "ec2_private_security_group" {
 
 resource "aws_security_group" "elb_security_group" {
   name        = "ELB-SG"
-  description = "ELB security group"
+  description = "ELB Security Group"
   vpc_id      = "${data.terraform_remote_state.network_configuration.vpc_id}"
   ingress {
     from_port   = 0
@@ -175,4 +175,31 @@ resource "aws_launch_configuration" "ec2_public_launch_configuration" {
     export INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
     echo "<!doctype html><html lang='en'><head></head><body><h1>Production Web App at instance <b>"$INSTANCE_ID"</b></h1></body></html>" > /var/www/html/index.html
   EOF
+}
+
+resource "aws_elb" "webapp_load_balancer" {
+  name            = "Production-WebApp-LoadBalancer"
+  internal        = false
+  security_groups = ["${aws_security_group.elb_security_group.id}"]
+  
+  subnets = [
+    "${data.terraform_remote_state.network_configuration.public_subnet_1_id}",
+    "${data.terraform_remote_state.network_configuration.public_subnet_2_id}",
+    "${data.terraform_remote_state.network_configuration.public_subnet_3_id}"
+  ]
+
+  listener {
+    instance_port = 80
+    instance_protocol = "HTTP"
+    lb_port = 80
+    lb_protocol = "HTTP"
+  }
+
+  health_check {
+    healthy_threshold = 5
+    interval = 30
+    target = "HTTP:80/index.html"
+    timeout = 10
+    unhealthy_threshold = 5
+  }
 }
