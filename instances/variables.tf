@@ -18,3 +18,11 @@ variable "ec2_instance_type" {
 variable "key_pair_name" {
   description = "Keypair to connect to EC2 Instances"
 }
+
+variable "max_instance_size" {
+  default = "Maximum number of instances to launch"
+}
+
+variable "min_instance_size" {
+  default = "Minumum number of instances to launch"
+}
