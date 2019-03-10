@@ -17,20 +17,23 @@ data "terraform_remote_state" "network_configuration" {
 
 resource "aws_security_group" "ec2_public_security_group" {
   name        = "EC2-Public-SG"
-  description = "Internet reaching access for EC2 instances"
+  description = "Internet reaching access for EC2 Instances"
   vpc_id      = "${data.terraform_remote_state.network_configuration.vpc_id}"
+
   ingress {
     from_port   = 80
     protocol    = "TCP"
     to_port     = 80
     cidr_blocks = ["0.0.0.0/0"]
   }
+
   ingress {
     from_port   = 22
     protocol    = "TCP"
     to_port     = 22
-    cidr_blocks = ["*/32"]
+    cidr_blocks = ["82.222.72.138/32"]
   }
+
   egress {
     from_port   = 0
     protocol    = "-1"
@@ -108,24 +111,23 @@ resource "aws_iam_role_policy" "ec2_iam_role_policy" {
   name    = "EC2-IAM-Policy"
   role    = "${aws_iam_role.ec2_iam_role.id}"
   policy  = <<EOF
+{
+  "Version" : "2012-10-17",
+  "Statement" : [
     {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Effect": "Allow",
-          "Action": [
-            "ec2:*",
-            "elasticloadbalancing:*",
-            "cloudwatch:*",
-            "logs:*"
-          ],
-          "Resource": "*"
-        }
-      ]
+      "Effect": "Allow",
+      "Action": [
+        "ec2:*",
+        "elasticloadbalancing:*",
+        "cloudwatch:*",
+        "logs:*"
+      ],
+      "Resource": "*"
     }
-  EOF
+  ]
 }
-
+EOF
+}
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
   name = "EC2-IAM-Instance-Profile"
   role = "${aws_iam_role.ec2_iam_role.name}"
@@ -133,6 +135,8 @@ resource "aws_iam_instance_profile" "ec2_instance_profile" {
 
 data "aws_ami" "launch_configuration_ami" {
   most_recent = true
+  owners      = ["amazon"]
+
   filter {
     name    = "owner-alias"
     values  = ["amazon"]
@@ -286,7 +290,7 @@ resource "aws_autoscaling_group" "ec2_public_autoscaling_group" {
 resource "aws_autoscaling_policy" "webapp_production_scaling_policy" {
   autoscaling_group_name    = "${aws_autoscaling_group.ec2_public_autoscaling_group.name}"
   name                      = "Production-WebApp-AutoScaling-Policy"
-  policy_type               = "TargetTrackingPolicy"
+  policy_type               = "TargetTrackingScaling"
   min_adjustment_magnitude  = 1
 
   target_tracking_configuration {
@@ -300,7 +304,7 @@ resource "aws_autoscaling_policy" "webapp_production_scaling_policy" {
 resource "aws_autoscaling_policy" "backend_production_scaling_policy" {
   autoscaling_group_name    = "${aws_autoscaling_group.ec2_private_autoscaling_group.name}"
   name                      = "Production-Backend-AutoScaling-Policy"
-  policy_type               = "TargetTrackingPolicy"
+  policy_type               = "TargetTrackingScaling"
   min_adjustment_magnitude  = 1
 
   target_tracking_configuration {
