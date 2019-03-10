@@ -44,10 +44,10 @@ resource "aws_security_group" "ec2_private_security_group" {
   description = "Only allow public SG resources to access these instances"
   vpc_id      = "${data.terraform_remote_state.network_configuration.vpc_id}"
   ingress {
-    from_port   = 0
-    protocol    = "-1"
-    to_port     = 0
-    cidr_blocks = ["${aws_security_group.ec2_public_security_group.id}"]
+    from_port       = 0
+    protocol        = "-1"
+    to_port         = 0
+    security_groups = ["${aws_security_group.ec2_public_security_group.id}"]
   }
   ingress {
     from_port   = 80
@@ -140,7 +140,7 @@ data "aws_ami" "launch_configuration_ami" {
 }
 
 resource "aws_launch_configuration" "ec2_private_launch_configuration" {
-  image_id                    = "${data.aws_ami.launch_configuration_ami.id}"
+  image_id                    = "ami-02a39bdb8e8ee056a"
   instance_type               = "${var.ec2_instance_type}"
   key_name                    = "${var.key_pair_name}"
   associate_public_ip_address = false
@@ -150,7 +150,7 @@ resource "aws_launch_configuration" "ec2_private_launch_configuration" {
   user_data = <<EOF
     #!/bin/bash
     yum update -y
-    yum install httpd24 -y
+    yum install httpd -y
     service httpd start
     chkconfig httpd on
     export INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
@@ -159,7 +159,7 @@ resource "aws_launch_configuration" "ec2_private_launch_configuration" {
 }
 
 resource "aws_launch_configuration" "ec2_public_launch_configuration" {
-  image_id                    = "${data.aws_ami.launch_configuration_ami.id}"
+  image_id                    = "ami-02a39bdb8e8ee056a"
   instance_type               = "${var.ec2_instance_type}"
   key_name                    = "${var.key_pair_name}"
   associate_public_ip_address = true
@@ -169,7 +169,7 @@ resource "aws_launch_configuration" "ec2_public_launch_configuration" {
   user_data = <<EOF
     #!/bin/bash
     yum update -y
-    yum install httpd24 -y
+    yum install httpd -y
     service httpd start
     chkconfig httpd on
     export INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
