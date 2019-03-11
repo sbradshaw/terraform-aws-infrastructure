@@ -87,24 +87,22 @@ resource "aws_security_group" "elb_security_group" {
 }
 
 resource "aws_iam_role" "ec2_iam_role" {
-  name                = "EC2-IAM-Role"
-  assume_role_policy  = <<EOF
+  name               = "EC2-IAM-Role"
+  assume_role_policy = <<EOF
+{
+  "Version" : "2012-10-17",
+  "Statement" :
+  [
     {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Effect": "Allow",
-          "Principal": {
-            "Service": [
-              "ec2.amazonaws.com",
-              "application-autoscaling.amazonaws.com"
-            ]
-          },
-          "Action": "sts:AssumeRole"
-        }
-      ]
+      "Effect" : "Allow",
+      "Principal" : {
+        "Service" : ["ec2.amazonaws.com", "application-autoscaling.amazonaws.com"]
+      },
+      "Action" : "sts:AssumeRole"
     }
-  EOF
+  ]
+}
+EOF
 }
 
 resource "aws_iam_role_policy" "ec2_iam_role_policy" {
@@ -128,6 +126,7 @@ resource "aws_iam_role_policy" "ec2_iam_role_policy" {
 }
 EOF
 }
+
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
   name = "EC2-IAM-Instance-Profile"
   role = "${aws_iam_role.ec2_iam_role.name}"
