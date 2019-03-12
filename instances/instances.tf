@@ -265,7 +265,7 @@ resource "aws_autoscaling_group" "ec2_public_autoscaling_group" {
   vpc_zone_identifier   = [
     "${data.terraform_remote_state.network_configuration.public_subnet_1_id}",
     "${data.terraform_remote_state.network_configuration.public_subnet_2_id}",
-    "${data.terraform_remote_state.network_configuration.public_subnet_2_id}"
+    "${data.terraform_remote_state.network_configuration.public_subnet_3_id}"
   ]
   max_size              = "${var.max_instance_size}"
   min_size              = "${var.min_instance_size}"
