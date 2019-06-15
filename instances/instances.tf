@@ -271,7 +271,7 @@ resource "aws_autoscaling_group" "ec2_public_autoscaling_group" {
   min_size              = "${var.min_instance_size}"
   launch_configuration  = "${aws_launch_configuration.ec2_public_launch_configuration.name}"
   health_check_type     = "ELB"
-  load_balancers        = ["${aws_elb.backend_load_balancer.name}"]
+  load_balancers        = ["${aws_elb.webapp_load_balancer.name}"]
 
   tag {
     key                 = "Name"
